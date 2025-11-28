@@ -19,13 +19,25 @@ This will:
 2. Load all `.toml` script files
 3. Run each script's `[up]` command in order (sorted by category, priority, filename)
 
-## force down (coming soon)
+## force down
 
 Tear down a session by running `[down]` commands in reverse order.
 
 ```sh
 force down <feature-name>
+force d <feature-name>  # alias
 ```
+
+**Example:**
+```sh
+force down add-login
+```
+
+This will:
+1. Find the `.force/` directory (searches up from current directory)
+2. Load all `.toml` script files
+3. Run each script's `[down]` command in reverse order (opposite of `up`)
+4. Scripts without a `[down]` section are skipped
 
 ## force status (coming soon)
 

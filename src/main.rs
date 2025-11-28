@@ -22,6 +22,12 @@ enum Commands {
         /// Feature name for the session
         feature: String,
     },
+    /// Tear down a session (alias: d)
+    #[command(alias = "d")]
+    Down {
+        /// Feature name for the session
+        feature: String,
+    },
 }
 
 fn main() {
@@ -29,6 +35,7 @@ fn main() {
 
     let result = match cli.command {
         Commands::Up { feature } => run_up(&feature),
+        Commands::Down { feature } => run_down(&feature),
     };
 
     if let Err(e) = result {
@@ -57,5 +64,25 @@ fn run_up(feature: &str) -> Result<(), Box<dyn std::error::Error>> {
     }
 
     println!("\nSession '{}' is ready!", feature);
+    Ok(())
+}
+
+fn run_down(feature: &str) -> Result<(), Box<dyn std::error::Error>> {
+    // 1. Find .force/ directory
+    let force_dir = config::find_force_dir()?;
+    println!("Found .force/ at: {}", force_dir.display());
+
+    // 2. Generate environment
+    let force_env = env::ForceEnv::new(feature, &force_dir);
+    println!("Feature: {} (slug: {})", force_env.feature, force_env.feature_slug);
+
+    // 3. Discover and load scripts
+    let scripts = config::load_scripts(&force_dir)?;
+    println!("Found {} script(s)", scripts.len());
+
+    // 4. Execute down scripts in reverse order
+    runner::run_down(&scripts, &force_env)?;
+
+    println!("\nSession '{}' torn down.", feature);
     Ok(())
 }
