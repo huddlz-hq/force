@@ -56,7 +56,7 @@ pub fn load_scripts(force_dir: &Path) -> Result<Vec<LoadedScript>, Box<dyn std::
         let path = entry.path();
 
         // Only process .toml files
-        if path.extension().map_or(false, |ext| ext == "toml") {
+        if path.extension().is_some_and(|ext| ext == "toml") {
             let content = fs::read_to_string(&path)?;
             let script: Script = toml::from_str(&content)
                 .map_err(|e| format!("Failed to parse {}: {}", path.display(), e))?;
