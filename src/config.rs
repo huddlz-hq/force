@@ -25,7 +25,6 @@ pub struct ScriptCommand {
 /// A loaded script with its file info
 pub struct LoadedScript {
     pub name: String,
-    pub path: PathBuf,
     pub script: Script,
 }
 
@@ -69,11 +68,7 @@ pub fn load_scripts(force_dir: &Path) -> Result<Vec<LoadedScript>, Box<dyn std::
                 .unwrap_or("unknown")
                 .to_string();
 
-            scripts.push(LoadedScript {
-                name,
-                path,
-                script,
-            });
+            scripts.push(LoadedScript { name, script });
         }
     }
 
