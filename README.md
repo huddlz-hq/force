@@ -4,19 +4,50 @@ A force multiplier for parallel AI development. Manage multiple git worktrees wi
 
 ## Install
 
+### From releases (recommended)
+
+Download the latest release for your platform:
+
+```sh
+# macOS (Apple Silicon)
+curl -L https://github.com/huddlz-hq/force/releases/latest/download/force-macos-aarch64.tar.gz | tar xz
+sudo mv force /usr/local/bin/
+
+# macOS (Intel)
+curl -L https://github.com/huddlz-hq/force/releases/latest/download/force-macos-x86_64.tar.gz | tar xz
+sudo mv force /usr/local/bin/
+
+# Linux (x86_64)
+curl -L https://github.com/huddlz-hq/force/releases/latest/download/force-linux-x86_64.tar.gz | tar xz
+sudo mv force /usr/local/bin/
+
+# Linux (aarch64)
+curl -L https://github.com/huddlz-hq/force/releases/latest/download/force-linux-aarch64.tar.gz | tar xz
+sudo mv force /usr/local/bin/
+```
+
+### From source
+
 ```sh
 cargo install --path .
 ```
 
 ## Quick Start
 
-1. Create a `.force/` folder in your project root
-2. Add script files (see [docs/scripts.md](docs/scripts.md))
-3. Run `force up my-feature`
-
 ```sh
+# Initialize a new project
+force init
+
+# Edit .force/worktree.toml to match your project
+
+# Spin up a feature session
 force up add-login
-# Creates worktree, database, starts services with isolated ports
+
+# List active sessions
+force ls
+
+# Tear down when done
+force down add-login
 ```
 
 ## Documentation
