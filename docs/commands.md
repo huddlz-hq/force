@@ -47,10 +47,21 @@ List active sessions.
 force status
 ```
 
-## force init (coming soon)
+## force init
 
 Create a `.force/` folder with example scripts.
 
 ```sh
 force init
 ```
+
+**Example:**
+```sh
+cd my-project
+force init
+```
+
+This will:
+1. Create a `.force/` directory in the current folder
+2. Add an example `worktree.toml` script with detailed comments
+3. Show next steps for customizing and using force

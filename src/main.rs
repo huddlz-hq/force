@@ -1,5 +1,6 @@
 mod config;
 mod env;
+mod init;
 mod runner;
 
 use clap::{Parser, Subcommand};
@@ -28,6 +29,8 @@ enum Commands {
         /// Feature name for the session
         feature: String,
     },
+    /// Initialize a .force/ directory with example scripts
+    Init,
 }
 
 fn main() {
@@ -36,6 +39,7 @@ fn main() {
     let result = match cli.command {
         Commands::Up { feature } => run_up(&feature),
         Commands::Down { feature } => run_down(&feature),
+        Commands::Init => init::run_init(),
     };
 
     if let Err(e) = result {
