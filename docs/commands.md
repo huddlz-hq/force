@@ -18,6 +18,7 @@ This will:
 1. Find the `.force/` directory (searches up from current directory)
 2. Load all `.toml` script files
 3. Run each script's `[up]` command in order (sorted by category, priority, filename)
+4. Register the session (visible via `force ls`)
 
 ## force down
 
@@ -38,14 +39,24 @@ This will:
 2. Load all `.toml` script files
 3. Run each script's `[down]` command in reverse order (opposite of `up`)
 4. Scripts without a `[down]` section are skipped
+5. Unregister the session
 
-## force status (coming soon)
+## force ls
 
-List active sessions.
+List active sessions for the current project.
 
 ```sh
-force status
+force ls
 ```
+
+**Example output:**
+```
+Active sessions:
+  add-login     port 4427
+  fix-checkout  port 4891
+```
+
+Sessions are stored in `~/.local/state/force/` and tracked per-project.
 
 ## force init
 

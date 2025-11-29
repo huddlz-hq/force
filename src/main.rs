@@ -2,6 +2,7 @@ mod config;
 mod env;
 mod init;
 mod runner;
+mod state;
 
 use clap::{Parser, Subcommand};
 use std::process;
@@ -31,6 +32,8 @@ enum Commands {
     },
     /// Initialize a .force/ directory with example scripts
     Init,
+    /// List active sessions
+    Ls,
 }
 
 fn main() {
@@ -40,6 +43,7 @@ fn main() {
         Commands::Up { feature } => run_up(&feature),
         Commands::Down { feature } => run_down(&feature),
         Commands::Init => init::run_init(),
+        Commands::Ls => run_ls(),
     };
 
     if let Err(e) = result {
@@ -67,6 +71,9 @@ fn run_up(feature: &str) -> Result<(), Box<dyn std::error::Error>> {
         runner::run_script(&script, &force_env)?;
     }
 
+    // 5. Register session
+    state::add_session(&force_dir, feature)?;
+
     println!("\nSession '{}' is ready!", feature);
     Ok(())
 }
@@ -87,6 +94,26 @@ fn run_down(feature: &str) -> Result<(), Box<dyn std::error::Error>> {
     // 4. Execute down scripts in reverse order
     runner::run_down(&scripts, &force_env)?;
 
+    // 5. Unregister session
+    state::remove_session(&force_dir, feature)?;
+
     println!("\nSession '{}' torn down.", feature);
+    Ok(())
+}
+
+fn run_ls() -> Result<(), Box<dyn std::error::Error>> {
+    let force_dir = config::find_force_dir()?;
+    let sessions = state::list_sessions(&force_dir)?;
+
+    if sessions.is_empty() {
+        println!("No active sessions");
+        return Ok(());
+    }
+
+    println!("Active sessions:");
+    for name in sessions {
+        let force_env = env::ForceEnv::new(&name, &force_dir);
+        println!("  {}  port {}", name, force_env.port);
+    }
     Ok(())
 }
