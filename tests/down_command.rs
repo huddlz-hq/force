@@ -49,7 +49,12 @@ run = "echo 'up only'"
     )
 }
 
-fn order_tracking_down_script(category: &str, priority: Option<i32>, name: &str, output_file: &Path) -> String {
+fn order_tracking_down_script(
+    category: &str,
+    priority: Option<i32>,
+    name: &str,
+    output_file: &Path,
+) -> String {
     let priority_line = match priority {
         Some(p) => format!("priority = {}", p),
         None => String::new(),
@@ -67,7 +72,11 @@ run = "echo 'up'"
 description = "Tear down: {}"
 run = "echo '{}' >> {}"
 "#,
-        category, priority_line, name, name, output_file.display()
+        category,
+        priority_line,
+        name,
+        name,
+        output_file.display()
     )
 }
 
@@ -76,9 +85,17 @@ fn test_down_with_single_script() {
     let project = create_temp_project();
     create_script(project.path(), "hello", &script_with_down("setup"));
 
-    Assert::new(force_cmd().args(["down", "test-feature"]).current_dir(project.path()).output().unwrap())
-        .success()
-        .stdout(predicate::str::contains("Session 'test-feature' torn down."));
+    Assert::new(
+        force_cmd()
+            .args(["down", "test-feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success()
+    .stdout(predicate::str::contains(
+        "Session 'test-feature' torn down.",
+    ));
 }
 
 #[test]
@@ -86,20 +103,36 @@ fn test_down_with_alias() {
     let project = create_temp_project();
     create_script(project.path(), "hello", &script_with_down("setup"));
 
-    Assert::new(force_cmd().args(["d", "my-feature"]).current_dir(project.path()).output().unwrap())
-        .success()
-        .stdout(predicate::str::contains("Session 'my-feature' torn down."));
+    Assert::new(
+        force_cmd()
+            .args(["d", "my-feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success()
+    .stdout(predicate::str::contains("Session 'my-feature' torn down."));
 }
 
 #[test]
 fn test_down_skips_scripts_without_down_section() {
     let project = create_temp_project();
     create_script(project.path(), "with_down", &script_with_down("setup"));
-    create_script(project.path(), "without_down", &script_without_down("setup"));
+    create_script(
+        project.path(),
+        "without_down",
+        &script_without_down("setup"),
+    );
 
-    Assert::new(force_cmd().args(["down", "feature"]).current_dir(project.path()).output().unwrap())
-        .success()
-        .stdout(predicate::str::contains("(no down script, skipping)"));
+    Assert::new(
+        force_cmd()
+            .args(["down", "feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success()
+    .stdout(predicate::str::contains("(no down script, skipping)"));
 }
 
 #[test]
@@ -121,8 +154,14 @@ fn test_down_runs_scripts_in_reverse_order() {
         &order_tracking_down_script("setup", None, "alpha", &output_file),
     );
 
-    Assert::new(force_cmd().args(["down", "feature"]).current_dir(project.path()).output().unwrap())
-        .success();
+    Assert::new(
+        force_cmd()
+            .args(["down", "feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success();
 
     let output = fs::read_to_string(&output_file).unwrap();
     let lines: Vec<&str> = output.lines().collect();
@@ -153,8 +192,14 @@ fn test_down_reverses_priority_order() {
         &order_tracking_down_script("setup", Some(3), "third", &output_file),
     );
 
-    Assert::new(force_cmd().args(["down", "feature"]).current_dir(project.path()).output().unwrap())
-        .success();
+    Assert::new(
+        force_cmd()
+            .args(["down", "feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success();
 
     let output = fs::read_to_string(&output_file).unwrap();
     let lines: Vec<&str> = output.lines().collect();
@@ -178,9 +223,15 @@ run = "exit 1"
 "#;
     create_script(project.path(), "failing", script);
 
-    Assert::new(force_cmd().args(["down", "feature"]).current_dir(project.path()).output().unwrap())
-        .failure()
-        .stderr(predicate::str::contains("failed"));
+    Assert::new(
+        force_cmd()
+            .args(["down", "feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .failure()
+    .stderr(predicate::str::contains("failed"));
 }
 
 #[test]
@@ -202,8 +253,14 @@ run = "echo \"FORCE_FEATURE=$FORCE_FEATURE\" >> {}"
     );
     create_script(project.path(), "env_check", &script);
 
-    Assert::new(force_cmd().args(["down", "my-feature"]).current_dir(project.path()).output().unwrap())
-        .success();
+    Assert::new(
+        force_cmd()
+            .args(["down", "my-feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success();
 
     let output = fs::read_to_string(&output_file).unwrap();
     assert!(output.contains("FORCE_FEATURE=my-feature"));

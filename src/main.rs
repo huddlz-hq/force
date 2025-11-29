@@ -59,8 +59,14 @@ fn run_up(feature: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     // 2. Generate environment
     let force_env = env::ForceEnv::new(feature, &force_dir);
-    println!("Feature: {} (slug: {})", force_env.feature, force_env.feature_slug);
-    println!("Port: {} (offset: {})", force_env.port, force_env.port_offset);
+    println!(
+        "Feature: {} (slug: {})",
+        force_env.feature, force_env.feature_slug
+    );
+    println!(
+        "Port: {} (offset: {})",
+        force_env.port, force_env.port_offset
+    );
 
     // 3. Discover and load scripts
     let scripts = config::load_scripts(&force_dir)?;
@@ -85,7 +91,10 @@ fn run_down(feature: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     // 2. Generate environment
     let force_env = env::ForceEnv::new(feature, &force_dir);
-    println!("Feature: {} (slug: {})", force_env.feature, force_env.feature_slug);
+    println!(
+        "Feature: {} (slug: {})",
+        force_env.feature, force_env.feature_slug
+    );
 
     // 3. Discover and load scripts
     let scripts = config::load_scripts(&force_dir)?;

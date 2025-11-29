@@ -39,9 +39,15 @@ fn test_finds_force_dir_in_current() {
     let project = create_temp_project();
     create_script(project.path(), "test", &minimal_script("setup"));
 
-    Assert::new(force_cmd().args(["up", "feature"]).current_dir(project.path()).output().unwrap())
-        .success()
-        .stdout(predicate::str::contains("Found .force/"));
+    Assert::new(
+        force_cmd()
+            .args(["up", "feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success()
+    .stdout(predicate::str::contains("Found .force/"));
 }
 
 #[test]
@@ -52,9 +58,15 @@ fn test_finds_force_dir_in_parent() {
     let subdir = project.path().join("src");
     fs::create_dir(&subdir).unwrap();
 
-    Assert::new(force_cmd().args(["up", "feature"]).current_dir(&subdir).output().unwrap())
-        .success()
-        .stdout(predicate::str::contains("Found .force/"));
+    Assert::new(
+        force_cmd()
+            .args(["up", "feature"])
+            .current_dir(&subdir)
+            .output()
+            .unwrap(),
+    )
+    .success()
+    .stdout(predicate::str::contains("Found .force/"));
 }
 
 #[test]
@@ -65,18 +77,30 @@ fn test_finds_force_dir_in_grandparent() {
     let subdir = project.path().join("src/components");
     fs::create_dir_all(&subdir).unwrap();
 
-    Assert::new(force_cmd().args(["up", "feature"]).current_dir(&subdir).output().unwrap())
-        .success()
-        .stdout(predicate::str::contains("Found .force/"));
+    Assert::new(
+        force_cmd()
+            .args(["up", "feature"])
+            .current_dir(&subdir)
+            .output()
+            .unwrap(),
+    )
+    .success()
+    .stdout(predicate::str::contains("Found .force/"));
 }
 
 #[test]
 fn test_error_when_no_force_dir() {
     let dir = TempDir::new().unwrap();
 
-    Assert::new(force_cmd().args(["up", "feature"]).current_dir(dir.path()).output().unwrap())
-        .failure()
-        .stderr(predicate::str::contains(".force/ directory not found"));
+    Assert::new(
+        force_cmd()
+            .args(["up", "feature"])
+            .current_dir(dir.path())
+            .output()
+            .unwrap(),
+    )
+    .failure()
+    .stderr(predicate::str::contains(".force/ directory not found"));
 }
 
 #[test]
@@ -115,8 +139,14 @@ run = "echo inner >> {}"
     )
     .unwrap();
 
-    Assert::new(force_cmd().args(["up", "feature"]).current_dir(&inner_dir).output().unwrap())
-        .success();
+    Assert::new(
+        force_cmd()
+            .args(["up", "feature"])
+            .current_dir(&inner_dir)
+            .output()
+            .unwrap(),
+    )
+    .success();
 
     assert!(inner_output.exists(), "Inner script should have run");
     assert!(!outer_output.exists(), "Outer script should NOT have run");

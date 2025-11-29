@@ -40,9 +40,15 @@ fn test_ls_shows_no_sessions_initially() {
     let project = create_temp_project();
     create_script(project.path(), "test", &minimal_script());
 
-    Assert::new(force_cmd().arg("ls").current_dir(project.path()).output().unwrap())
-        .success()
-        .stdout(predicate::str::contains("No active sessions"));
+    Assert::new(
+        force_cmd()
+            .arg("ls")
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success()
+    .stdout(predicate::str::contains("No active sessions"));
 }
 
 #[test]
@@ -51,14 +57,26 @@ fn test_ls_shows_session_after_up() {
     create_script(project.path(), "test", &minimal_script());
 
     // Run up first
-    Assert::new(force_cmd().args(["up", "my-feature"]).current_dir(project.path()).output().unwrap())
-        .success();
+    Assert::new(
+        force_cmd()
+            .args(["up", "my-feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success();
 
     // Now ls should show the session
-    Assert::new(force_cmd().arg("ls").current_dir(project.path()).output().unwrap())
-        .success()
-        .stdout(predicate::str::contains("my-feature"))
-        .stdout(predicate::str::contains("port"));
+    Assert::new(
+        force_cmd()
+            .arg("ls")
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success()
+    .stdout(predicate::str::contains("my-feature"))
+    .stdout(predicate::str::contains("port"));
 }
 
 #[test]
@@ -67,17 +85,35 @@ fn test_ls_removes_session_after_down() {
     create_script(project.path(), "test", &minimal_script());
 
     // Run up
-    Assert::new(force_cmd().args(["up", "my-feature"]).current_dir(project.path()).output().unwrap())
-        .success();
+    Assert::new(
+        force_cmd()
+            .args(["up", "my-feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success();
 
     // Run down
-    Assert::new(force_cmd().args(["down", "my-feature"]).current_dir(project.path()).output().unwrap())
-        .success();
+    Assert::new(
+        force_cmd()
+            .args(["down", "my-feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success();
 
     // Now ls should show no sessions
-    Assert::new(force_cmd().arg("ls").current_dir(project.path()).output().unwrap())
-        .success()
-        .stdout(predicate::str::contains("No active sessions"));
+    Assert::new(
+        force_cmd()
+            .arg("ls")
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success()
+    .stdout(predicate::str::contains("No active sessions"));
 }
 
 #[test]
@@ -86,23 +122,47 @@ fn test_ls_shows_multiple_sessions() {
     create_script(project.path(), "test", &minimal_script());
 
     // Run up for two features
-    Assert::new(force_cmd().args(["up", "feature-a"]).current_dir(project.path()).output().unwrap())
-        .success();
-    Assert::new(force_cmd().args(["up", "feature-b"]).current_dir(project.path()).output().unwrap())
-        .success();
+    Assert::new(
+        force_cmd()
+            .args(["up", "feature-a"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success();
+    Assert::new(
+        force_cmd()
+            .args(["up", "feature-b"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success();
 
     // ls should show both
-    Assert::new(force_cmd().arg("ls").current_dir(project.path()).output().unwrap())
-        .success()
-        .stdout(predicate::str::contains("feature-a"))
-        .stdout(predicate::str::contains("feature-b"));
+    Assert::new(
+        force_cmd()
+            .arg("ls")
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success()
+    .stdout(predicate::str::contains("feature-a"))
+    .stdout(predicate::str::contains("feature-b"));
 }
 
 #[test]
 fn test_ls_fails_without_force_dir() {
     let dir = TempDir::new().unwrap();
 
-    Assert::new(force_cmd().arg("ls").current_dir(dir.path()).output().unwrap())
-        .failure()
-        .stderr(predicate::str::contains(".force/ directory not found"));
+    Assert::new(
+        force_cmd()
+            .arg("ls")
+            .current_dir(dir.path())
+            .output()
+            .unwrap(),
+    )
+    .failure()
+    .stderr(predicate::str::contains(".force/ directory not found"));
 }

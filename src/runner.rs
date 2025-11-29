@@ -3,10 +3,7 @@ use crate::env::ForceEnv;
 use std::process::Command;
 
 /// Run a script with the force environment
-pub fn run_script(
-    script: &LoadedScript,
-    env: &ForceEnv,
-) -> Result<(), Box<dyn std::error::Error>> {
+pub fn run_script(script: &LoadedScript, env: &ForceEnv) -> Result<(), Box<dyn std::error::Error>> {
     let description = script
         .script
         .up
@@ -27,11 +24,7 @@ pub fn run_script(
 
     if !status.success() {
         let code = status.code().unwrap_or(-1);
-        return Err(format!(
-            "Script '{}' failed with exit code {}",
-            script.name, code
-        )
-        .into());
+        return Err(format!("Script '{}' failed with exit code {}", script.name, code).into());
     }
 
     Ok(())

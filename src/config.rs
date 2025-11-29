@@ -41,7 +41,7 @@ pub fn find_force_dir() -> Result<PathBuf, Box<dyn std::error::Error>> {
         match current.parent() {
             Some(parent) => current = parent.to_path_buf(),
             None => {
-                return Err(".force/ directory not found. Run 'force init' to create one.".into())
+                return Err(".force/ directory not found. Run 'force init' to create one.".into());
             }
         }
     }
@@ -58,9 +58,8 @@ pub fn load_scripts(force_dir: &Path) -> Result<Vec<LoadedScript>, Box<dyn std::
         // Only process .toml files
         if path.extension().map_or(false, |ext| ext == "toml") {
             let content = fs::read_to_string(&path)?;
-            let script: Script = toml::from_str(&content).map_err(|e| {
-                format!("Failed to parse {}: {}", path.display(), e)
-            })?;
+            let script: Script = toml::from_str(&content)
+                .map_err(|e| format!("Failed to parse {}: {}", path.display(), e))?;
 
             let name = path
                 .file_stem()

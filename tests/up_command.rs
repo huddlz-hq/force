@@ -70,9 +70,15 @@ fn test_up_with_single_script() {
     let project = create_temp_project();
     create_script(project.path(), "hello", &minimal_script("setup"));
 
-    Assert::new(force_cmd().args(["up", "test-feature"]).current_dir(project.path()).output().unwrap())
-        .success()
-        .stdout(predicate::str::contains("Session 'test-feature' is ready!"));
+    Assert::new(
+        force_cmd()
+            .args(["up", "test-feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success()
+    .stdout(predicate::str::contains("Session 'test-feature' is ready!"));
 }
 
 #[test]
@@ -80,18 +86,30 @@ fn test_up_with_alias() {
     let project = create_temp_project();
     create_script(project.path(), "hello", &minimal_script("setup"));
 
-    Assert::new(force_cmd().args(["u", "my-feature"]).current_dir(project.path()).output().unwrap())
-        .success()
-        .stdout(predicate::str::contains("Session 'my-feature' is ready!"));
+    Assert::new(
+        force_cmd()
+            .args(["u", "my-feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success()
+    .stdout(predicate::str::contains("Session 'my-feature' is ready!"));
 }
 
 #[test]
 fn test_up_fails_without_force_dir() {
     let dir = TempDir::new().unwrap();
 
-    Assert::new(force_cmd().args(["up", "test-feature"]).current_dir(dir.path()).output().unwrap())
-        .failure()
-        .stderr(predicate::str::contains(".force/ directory not found"));
+    Assert::new(
+        force_cmd()
+            .args(["up", "test-feature"])
+            .current_dir(dir.path())
+            .output()
+            .unwrap(),
+    )
+    .failure()
+    .stderr(predicate::str::contains(".force/ directory not found"));
 }
 
 #[test]
@@ -100,9 +118,15 @@ fn test_up_fails_on_invalid_toml() {
     let script_path = project.path().join(".force/invalid.toml");
     fs::write(&script_path, "this is not valid toml [[[").unwrap();
 
-    Assert::new(force_cmd().args(["up", "test-feature"]).current_dir(project.path()).output().unwrap())
-        .failure()
-        .stderr(predicate::str::contains("Failed to parse"));
+    Assert::new(
+        force_cmd()
+            .args(["up", "test-feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .failure()
+    .stderr(predicate::str::contains("Failed to parse"));
 }
 
 #[test]
@@ -120,9 +144,15 @@ run = "echo hello"
     )
     .unwrap();
 
-    Assert::new(force_cmd().args(["up", "test-feature"]).current_dir(project.path()).output().unwrap())
-        .failure()
-        .stderr(predicate::str::contains("Failed to parse"));
+    Assert::new(
+        force_cmd()
+            .args(["up", "test-feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .failure()
+    .stderr(predicate::str::contains("Failed to parse"));
 }
 
 #[test]
@@ -130,9 +160,15 @@ fn test_up_fails_on_script_error() {
     let project = create_temp_project();
     create_script(project.path(), "failing", &failing_script("setup"));
 
-    Assert::new(force_cmd().args(["up", "test-feature"]).current_dir(project.path()).output().unwrap())
-        .failure()
-        .stderr(predicate::str::contains("failed"));
+    Assert::new(
+        force_cmd()
+            .args(["up", "test-feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .failure()
+    .stderr(predicate::str::contains("failed"));
 }
 
 #[test]
@@ -147,9 +183,15 @@ run = "echo hello"
 "#;
     create_script(project.path(), "described", script);
 
-    Assert::new(force_cmd().args(["up", "test-feature"]).current_dir(project.path()).output().unwrap())
-        .success()
-        .stdout(predicate::str::contains("My custom description"));
+    Assert::new(
+        force_cmd()
+            .args(["up", "test-feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success()
+    .stdout(predicate::str::contains("My custom description"));
 }
 
 #[test]
@@ -163,8 +205,14 @@ fn test_up_sets_all_env_vars() {
         &env_capture_script("setup", &output_file),
     );
 
-    Assert::new(force_cmd().args(["up", "my-feature"]).current_dir(project.path()).output().unwrap())
-        .success();
+    Assert::new(
+        force_cmd()
+            .args(["up", "my-feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success();
 
     let output = fs::read_to_string(&output_file).unwrap();
 

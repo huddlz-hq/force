@@ -42,10 +42,16 @@ impl ForceEnv {
         vec![
             ("FORCE_FEATURE".to_string(), self.feature.clone()),
             ("FORCE_FEATURE_SLUG".to_string(), self.feature_slug.clone()),
-            ("FORCE_PORT_OFFSET".to_string(), self.port_offset.to_string()),
+            (
+                "FORCE_PORT_OFFSET".to_string(),
+                self.port_offset.to_string(),
+            ),
             ("FORCE_PORT".to_string(), self.port.to_string()),
             ("FORCE_DB_NAME".to_string(), self.db_name.clone()),
-            ("FORCE_DIR".to_string(), self.force_dir.display().to_string()),
+            (
+                "FORCE_DIR".to_string(),
+                self.force_dir.display().to_string(),
+            ),
         ]
     }
 }
@@ -121,8 +127,14 @@ mod tests {
         assert_eq!(vars.len(), 6);
 
         let var_map: std::collections::HashMap<_, _> = vars.into_iter().collect();
-        assert_eq!(var_map.get("FORCE_FEATURE"), Some(&"my-feature".to_string()));
-        assert_eq!(var_map.get("FORCE_FEATURE_SLUG"), Some(&"my_feature".to_string()));
+        assert_eq!(
+            var_map.get("FORCE_FEATURE"),
+            Some(&"my-feature".to_string())
+        );
+        assert_eq!(
+            var_map.get("FORCE_FEATURE_SLUG"),
+            Some(&"my_feature".to_string())
+        );
         assert!(var_map.contains_key("FORCE_PORT"));
         assert!(var_map.contains_key("FORCE_PORT_OFFSET"));
         assert!(var_map.contains_key("FORCE_DB_NAME"));

@@ -21,7 +21,12 @@ fn create_script(project_dir: &Path, name: &str, content: &str) {
     fs::write(&script_path, content).expect("Failed to write script file");
 }
 
-fn order_tracking_script(category: &str, priority: Option<i32>, name: &str, output_file: &Path) -> String {
+fn order_tracking_script(
+    category: &str,
+    priority: Option<i32>,
+    name: &str,
+    output_file: &Path,
+) -> String {
     let priority_line = match priority {
         Some(p) => format!("priority = {}", p),
         None => String::new(),
@@ -36,7 +41,11 @@ category = "{}"
 description = "Track order: {}"
 run = "echo '{}' >> {}"
 "#,
-        category, priority_line, name, name, output_file.display()
+        category,
+        priority_line,
+        name,
+        name,
+        output_file.display()
     )
 }
 
@@ -76,8 +85,14 @@ fn test_scripts_run_in_category_order() {
         &order_tracking_script("setup", None, "alpha", &output_file),
     );
 
-    Assert::new(force_cmd().args(["up", "feature"]).current_dir(project.path()).output().unwrap())
-        .success();
+    Assert::new(
+        force_cmd()
+            .args(["up", "feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success();
 
     let output = fs::read_to_string(&output_file).unwrap();
     let lines: Vec<&str> = output.lines().collect();
@@ -107,8 +122,14 @@ fn test_scripts_run_in_priority_order() {
         &order_tracking_script("setup", Some(3), "third", &output_file),
     );
 
-    Assert::new(force_cmd().args(["up", "feature"]).current_dir(project.path()).output().unwrap())
-        .success();
+    Assert::new(
+        force_cmd()
+            .args(["up", "feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success();
 
     let output = fs::read_to_string(&output_file).unwrap();
     let lines: Vec<&str> = output.lines().collect();
@@ -137,8 +158,14 @@ fn test_scripts_run_in_filename_order() {
         &order_tracking_script("setup", None, "bravo", &output_file),
     );
 
-    Assert::new(force_cmd().args(["up", "feature"]).current_dir(project.path()).output().unwrap())
-        .success();
+    Assert::new(
+        force_cmd()
+            .args(["up", "feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success();
 
     let output = fs::read_to_string(&output_file).unwrap();
     let lines: Vec<&str> = output.lines().collect();
@@ -172,14 +199,23 @@ fn test_full_sorting_order() {
         &order_tracking_script("services", Some(10), "svc_high", &output_file),
     );
 
-    Assert::new(force_cmd().args(["up", "feature"]).current_dir(project.path()).output().unwrap())
-        .success();
+    Assert::new(
+        force_cmd()
+            .args(["up", "feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success();
 
     let output = fs::read_to_string(&output_file).unwrap();
     let lines: Vec<&str> = output.lines().collect();
 
     // services before setup, then by priority
-    assert_eq!(lines, vec!["svc_low", "svc_high", "setup_low", "setup_high"]);
+    assert_eq!(
+        lines,
+        vec!["svc_low", "svc_high", "setup_low", "setup_high"]
+    );
 }
 
 #[test]
@@ -193,8 +229,14 @@ fn test_script_receives_env_vars() {
         &env_capture_script("setup", &output_file),
     );
 
-    Assert::new(force_cmd().args(["up", "test-feature"]).current_dir(project.path()).output().unwrap())
-        .success();
+    Assert::new(
+        force_cmd()
+            .args(["up", "test-feature"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success();
 
     let output = fs::read_to_string(&output_file).unwrap();
 
@@ -228,8 +270,14 @@ run = "echo $FORCE_PORT > {}"
         let script_path = project.path().join(".force/port.toml");
         fs::write(&script_path, &script).unwrap();
 
-        Assert::new(force_cmd().args(["up", "consistent-feature"]).current_dir(project.path()).output().unwrap())
-            .success();
+        Assert::new(
+            force_cmd()
+                .args(["up", "consistent-feature"])
+                .current_dir(project.path())
+                .output()
+                .unwrap(),
+        )
+        .success();
 
         let port = fs::read_to_string(&output_file).unwrap().trim().to_string();
         ports.push(port);
@@ -255,13 +303,28 @@ run = "echo $FORCE_PORT > {}"
     );
     fs::write(project.path().join(".force/port.toml"), &script).unwrap();
 
-    Assert::new(force_cmd().args(["up", "feature-a"]).current_dir(project.path()).output().unwrap())
-        .success();
+    Assert::new(
+        force_cmd()
+            .args(["up", "feature-a"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success();
     let port_a = fs::read_to_string(&output_file).unwrap().trim().to_string();
 
-    Assert::new(force_cmd().args(["up", "feature-b"]).current_dir(project.path()).output().unwrap())
-        .success();
+    Assert::new(
+        force_cmd()
+            .args(["up", "feature-b"])
+            .current_dir(project.path())
+            .output()
+            .unwrap(),
+    )
+    .success();
     let port_b = fs::read_to_string(&output_file).unwrap().trim().to_string();
 
-    assert_ne!(port_a, port_b, "Different features should get different ports");
+    assert_ne!(
+        port_a, port_b,
+        "Different features should get different ports"
+    );
 }
