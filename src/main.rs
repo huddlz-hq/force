@@ -3,6 +3,7 @@ mod env;
 mod init;
 mod runner;
 mod state;
+mod worktree;
 
 use clap::{Parser, Subcommand};
 use std::process;
@@ -57,8 +58,30 @@ fn run_up(feature: &str) -> Result<(), Box<dyn std::error::Error>> {
     let force_dir = config::find_force_dir()?;
     println!("Found .force/ at: {}", force_dir.display());
 
-    // 2. Generate environment
-    let force_env = env::ForceEnv::new(feature, &force_dir);
+    // 2. Load configuration
+    let force_config = config::load_config(&force_dir)?;
+
+    // 3. Get project root (parent of .force/)
+    let project_root = force_dir
+        .parent()
+        .ok_or("Invalid .force/ location")?;
+
+    // 4. Create worktree
+    let feature_slug = env::slugify(feature);
+    let worktree_result = worktree::create_worktree(
+        project_root,
+        &feature_slug,
+        &force_config.worktree.path,
+    )?;
+
+    if worktree_result.created {
+        println!("Created worktree at: {}", worktree_result.path.display());
+    } else {
+        println!("Reusing worktree at: {}", worktree_result.path.display());
+    }
+
+    // 5. Generate environment
+    let force_env = env::ForceEnv::new(feature, &force_dir, worktree_result.path);
     println!(
         "Feature: {} (slug: {})",
         force_env.feature, force_env.feature_slug
@@ -68,16 +91,16 @@ fn run_up(feature: &str) -> Result<(), Box<dyn std::error::Error>> {
         force_env.port, force_env.port_offset
     );
 
-    // 3. Discover and load scripts
+    // 6. Discover and load scripts
     let scripts = config::load_scripts(&force_dir)?;
     println!("Found {} script(s)", scripts.len());
 
-    // 4. Execute scripts in order
+    // 7. Execute scripts in order
     for script in scripts {
         runner::run_script(&script, &force_env)?;
     }
 
-    // 5. Register session
+    // 8. Register session
     state::add_session(&force_dir, feature)?;
 
     println!("\nSession '{}' is ready!", feature);
@@ -89,21 +112,47 @@ fn run_down(feature: &str) -> Result<(), Box<dyn std::error::Error>> {
     let force_dir = config::find_force_dir()?;
     println!("Found .force/ at: {}", force_dir.display());
 
-    // 2. Generate environment
-    let force_env = env::ForceEnv::new(feature, &force_dir);
+    // 2. Load configuration
+    let force_config = config::load_config(&force_dir)?;
+
+    // 3. Get project root (parent of .force/)
+    let project_root = force_dir
+        .parent()
+        .ok_or("Invalid .force/ location")?;
+
+    // 4. Resolve worktree path
+    let feature_slug = env::slugify(feature);
+    let worktree_path = worktree::resolve_worktree_path(
+        project_root,
+        &feature_slug,
+        &force_config.worktree.path,
+    );
+
+    // 5. Generate environment
+    let force_env = env::ForceEnv::new(feature, &force_dir, worktree_path.clone());
     println!(
         "Feature: {} (slug: {})",
         force_env.feature, force_env.feature_slug
     );
 
-    // 3. Discover and load scripts
+    // 6. Discover and load scripts
     let scripts = config::load_scripts(&force_dir)?;
     println!("Found {} script(s)", scripts.len());
 
-    // 4. Execute down scripts in reverse order
-    runner::run_down(&scripts, &force_env)?;
+    // 7. Execute down scripts in reverse order (if worktree exists)
+    if worktree_path.exists() {
+        runner::run_down(&scripts, &force_env)?;
+    } else {
+        println!("Worktree not found, skipping down scripts");
+    }
 
-    // 5. Unregister session
+    // 8. Remove worktree if configured
+    if force_config.worktree.remove_on_down {
+        worktree::remove_worktree(project_root, &worktree_path)?;
+        println!("Removed worktree at: {}", worktree_path.display());
+    }
+
+    // 9. Unregister session
     state::remove_session(&force_dir, feature)?;
 
     println!("\nSession '{}' torn down.", feature);
@@ -112,6 +161,7 @@ fn run_down(feature: &str) -> Result<(), Box<dyn std::error::Error>> {
 
 fn run_ls() -> Result<(), Box<dyn std::error::Error>> {
     let force_dir = config::find_force_dir()?;
+    let force_config = config::load_config(&force_dir)?;
     let sessions = state::list_sessions(&force_dir)?;
 
     if sessions.is_empty() {
@@ -119,9 +169,19 @@ fn run_ls() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
+    let project_root = force_dir
+        .parent()
+        .ok_or("Invalid .force/ location")?;
+
     println!("Active sessions:");
     for name in sessions {
-        let force_env = env::ForceEnv::new(&name, &force_dir);
+        let feature_slug = env::slugify(&name);
+        let worktree_path = worktree::resolve_worktree_path(
+            project_root,
+            &feature_slug,
+            &force_config.worktree.path,
+        );
+        let force_env = env::ForceEnv::new(&name, &force_dir, worktree_path);
         println!("  {}  port {}", name, force_env.port);
     }
     Ok(())

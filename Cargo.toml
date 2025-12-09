@@ -1,6 +1,6 @@
 [package]
 name = "force"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 description = "A force multiplier for parallel AI development"
 license = "MIT"

@@ -10,7 +10,8 @@ pub fn get_state_dir(force_dir: &Path) -> PathBuf {
     let hash = simple_hash(canonical.to_string_lossy().as_ref());
 
     dirs::state_dir()
-        .unwrap_or_else(|| PathBuf::from("~/.local/state"))
+        .or_else(|| dirs::home_dir().map(|h| h.join(".local/state")))
+        .unwrap_or_else(|| PathBuf::from(".local/state"))
         .join("force")
         .join(hash)
 }
@@ -167,5 +168,26 @@ mod tests {
 
         let sessions = list_sessions(&force_dir).unwrap();
         assert_eq!(sessions.len(), 1);
+    }
+
+    #[test]
+    fn test_state_dir_is_absolute_path() {
+        let dir = TempDir::new().unwrap();
+        let force_dir = dir.path().join(".force");
+        fs::create_dir(&force_dir).unwrap();
+
+        let state_dir = get_state_dir(&force_dir);
+
+        // State dir must be an absolute path, not contain unexpanded ~ or other shell shortcuts
+        assert!(
+            state_dir.is_absolute(),
+            "State dir should be absolute, got: {:?}",
+            state_dir
+        );
+        assert!(
+            !state_dir.to_string_lossy().contains('~'),
+            "State dir should not contain literal ~, got: {:?}",
+            state_dir
+        );
     }
 }

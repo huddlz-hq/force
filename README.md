@@ -38,15 +38,13 @@ cargo install --path .
 # Initialize a new project
 force init
 
-# Edit .force/worktree.toml to match your project
-
-# Spin up a feature session
+# Spin up a feature session (creates worktree automatically)
 force up add-login
 
 # List active sessions
 force ls
 
-# Tear down when done
+# Tear down when done (removes worktree)
 force down add-login
 ```
 

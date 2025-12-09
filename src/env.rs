@@ -10,10 +10,11 @@ pub struct ForceEnv {
     pub port: u16,
     pub db_name: String,
     pub force_dir: PathBuf,
+    pub worktree: PathBuf,
 }
 
 impl ForceEnv {
-    pub fn new(feature: &str, force_dir: &Path) -> Self {
+    pub fn new(feature: &str, force_dir: &Path, worktree: PathBuf) -> Self {
         let feature_slug = slugify(feature);
         let port_offset = hash_to_offset(feature);
         let port = BASE_PORT + port_offset;
@@ -34,6 +35,7 @@ impl ForceEnv {
             port,
             db_name,
             force_dir: force_dir.to_path_buf(),
+            worktree,
         }
     }
 
@@ -52,12 +54,16 @@ impl ForceEnv {
                 "FORCE_DIR".to_string(),
                 self.force_dir.display().to_string(),
             ),
+            (
+                "FORCE_WORKTREE".to_string(),
+                self.worktree.display().to_string(),
+            ),
         ]
     }
 }
 
 /// Convert a feature name to a slug (lowercase ASCII, underscores)
-fn slugify(name: &str) -> String {
+pub fn slugify(name: &str) -> String {
     name.chars()
         .map(|c| {
             if c.is_ascii_alphanumeric() {
@@ -121,10 +127,14 @@ mod tests {
 
     #[test]
     fn test_force_env_to_env_vars() {
-        let env = ForceEnv::new("my-feature", &PathBuf::from("/project/.force"));
+        let env = ForceEnv::new(
+            "my-feature",
+            &PathBuf::from("/project/.force"),
+            PathBuf::from("/project/worktrees/my_feature"),
+        );
         let vars = env.to_env_vars();
 
-        assert_eq!(vars.len(), 6);
+        assert_eq!(vars.len(), 7);
 
         let var_map: std::collections::HashMap<_, _> = vars.into_iter().collect();
         assert_eq!(
@@ -139,11 +149,19 @@ mod tests {
         assert!(var_map.contains_key("FORCE_PORT_OFFSET"));
         assert!(var_map.contains_key("FORCE_DB_NAME"));
         assert!(var_map.contains_key("FORCE_DIR"));
+        assert_eq!(
+            var_map.get("FORCE_WORKTREE"),
+            Some(&"/project/worktrees/my_feature".to_string())
+        );
     }
 
     #[test]
     fn test_force_env_db_name() {
-        let env = ForceEnv::new("add-login", &PathBuf::from("/myproject/.force"));
+        let env = ForceEnv::new(
+            "add-login",
+            &PathBuf::from("/myproject/.force"),
+            PathBuf::from("/myproject/worktrees/add_login"),
+        );
         assert_eq!(env.db_name, "myproject_add_login");
     }
 
@@ -186,7 +204,11 @@ mod tests {
 
         #[test]
         fn prop_port_in_valid_range(feature in "[a-zA-Z][a-zA-Z0-9\\-]{0,50}") {
-            let env = ForceEnv::new(&feature, &PathBuf::from("/test/.force"));
+            let env = ForceEnv::new(
+                &feature,
+                &PathBuf::from("/test/.force"),
+                PathBuf::from("/test/worktrees/feature"),
+            );
             prop_assert!(env.port >= 4000);
             prop_assert!(env.port < 5000);
         }

@@ -20,6 +20,7 @@ pub fn run_script(script: &LoadedScript, env: &ForceEnv) -> Result<(), Box<dyn s
         .arg("-c")
         .arg(&script.script.up.run)
         .envs(env.to_env_vars())
+        .current_dir(&env.worktree)
         .status()?;
 
     if !status.success() {
@@ -58,6 +59,7 @@ pub fn run_down(
             .arg("-c")
             .arg(&down.run)
             .envs(env.to_env_vars())
+            .current_dir(&env.worktree)
             .status()?;
 
         if !status.success() {

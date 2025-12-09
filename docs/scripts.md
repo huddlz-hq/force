@@ -1,15 +1,15 @@
 # Scripts
 
-Scripts are TOML files in your `.force/` folder that define setup and teardown commands.
+Scripts are TOML files in your `.force/` folder that define setup and teardown commands. All scripts run in the worktree directory.
 
 ## Folder Structure
 
 ```
 your-project/
 └── .force/
-    ├── worktree.toml
-    ├── database.toml
-    └── server.toml
+    ├── config.toml    # Force configuration (not a script)
+    ├── env.toml       # Creates .env files
+    └── database.toml  # Database setup
 ```
 
 ## TOML Format
@@ -36,6 +36,8 @@ Scripts run in this order:
 2. Priority (lower first, default 0)
 3. Filename (alphabetically)
 
+On `force down`, scripts run in reverse order.
+
 ## Environment Variables
 
 Force provides these variables to every script:
@@ -48,10 +50,24 @@ Force provides these variables to every script:
 | `FORCE_PORT` | `4427` | Base port (4000) + offset |
 | `FORCE_DB_NAME` | `myapp_add_login` | Project name + feature slug |
 | `FORCE_DIR` | `/path/to/.force` | Path to .force directory |
+| `FORCE_WORKTREE` | `/path/to/worktrees/add_login` | Path to worktree directory |
+
+## Configuration
+
+Create `.force/config.toml` to customize worktree behavior:
+
+```toml
+[worktree]
+# Path template for worktrees (default shown)
+path = "../worktrees/$FORCE_FEATURE_SLUG"
+
+# Remove worktree when running `force down` (default: true)
+remove_on_down = true
+```
 
 ## Examples
 
-### Git Worktree
+### Environment Files
 
 ```toml
 [meta]
@@ -59,11 +75,21 @@ category = "setup"
 priority = 1
 
 [up]
-description = "Create git worktree"
-run = "git worktree add ../$FORCE_FEATURE_SLUG -b $FORCE_FEATURE_SLUG"
+description = "Create local env files"
+run = """
+cat > .dev.local.env << EOF
+PORT=$FORCE_PORT
+DATABASE_URL=postgres://localhost/$FORCE_DB_NAME
+EOF
+
+cat > .test.local.env << EOF
+PORT=$FORCE_PORT
+DATABASE_URL=postgres://localhost/${FORCE_DB_NAME}_test
+EOF
+"""
 
 [down]
-run = "git worktree remove ../$FORCE_FEATURE_SLUG"
+run = "rm -f .dev.local.env .test.local.env"
 ```
 
 ### Database (PostgreSQL)
@@ -74,11 +100,17 @@ category = "setup"
 priority = 2
 
 [up]
-description = "Create feature database"
-run = "createdb $FORCE_DB_NAME || echo 'Database exists'"
+description = "Create feature databases"
+run = """
+createdb $FORCE_DB_NAME 2>/dev/null || echo 'Dev database exists'
+createdb ${FORCE_DB_NAME}_test 2>/dev/null || echo 'Test database exists'
+"""
 
 [down]
-run = "dropdb $FORCE_DB_NAME --if-exists"
+run = """
+dropdb $FORCE_DB_NAME --if-exists
+dropdb ${FORCE_DB_NAME}_test --if-exists
+"""
 ```
 
 ### Phoenix Server

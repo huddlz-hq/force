@@ -10,9 +10,37 @@ fn force_cmd() -> Command {
     Command::new(assert_cmd::cargo::cargo_bin!("force"))
 }
 
-// Helper functions
+// Helper functions - creates a git repo with initial commit for worktree support
 fn create_temp_project() -> TempDir {
     let dir = TempDir::new().expect("Failed to create temp dir");
+
+    // Initialize git repo
+    Command::new("git")
+        .args(["init"])
+        .current_dir(dir.path())
+        .output()
+        .expect("Failed to init git");
+
+    // Configure git user for commits
+    Command::new("git")
+        .args(["config", "user.email", "test@test.com"])
+        .current_dir(dir.path())
+        .output()
+        .expect("Failed to configure git email");
+
+    Command::new("git")
+        .args(["config", "user.name", "Test User"])
+        .current_dir(dir.path())
+        .output()
+        .expect("Failed to configure git name");
+
+    // Create initial commit (required for worktrees)
+    Command::new("git")
+        .args(["commit", "--allow-empty", "-m", "Initial commit"])
+        .current_dir(dir.path())
+        .output()
+        .expect("Failed to create initial commit");
+
     fs::create_dir(dir.path().join(".force")).expect("Failed to create .force dir");
     dir
 }
@@ -59,7 +87,7 @@ fn test_ls_shows_session_after_up() {
     // Run up first
     Assert::new(
         force_cmd()
-            .args(["up", "my-feature"])
+            .args(["up", "ls-after-up-test"])
             .current_dir(project.path())
             .output()
             .unwrap(),
@@ -75,7 +103,7 @@ fn test_ls_shows_session_after_up() {
             .unwrap(),
     )
     .success()
-    .stdout(predicate::str::contains("my-feature"))
+    .stdout(predicate::str::contains("ls-after-up-test"))
     .stdout(predicate::str::contains("port"));
 }
 
@@ -87,7 +115,7 @@ fn test_ls_removes_session_after_down() {
     // Run up
     Assert::new(
         force_cmd()
-            .args(["up", "my-feature"])
+            .args(["up", "ls-remove-test"])
             .current_dir(project.path())
             .output()
             .unwrap(),
@@ -97,7 +125,7 @@ fn test_ls_removes_session_after_down() {
     // Run down
     Assert::new(
         force_cmd()
-            .args(["down", "my-feature"])
+            .args(["down", "ls-remove-test"])
             .current_dir(project.path())
             .output()
             .unwrap(),
@@ -124,7 +152,7 @@ fn test_ls_shows_multiple_sessions() {
     // Run up for two features
     Assert::new(
         force_cmd()
-            .args(["up", "feature-a"])
+            .args(["up", "ls-multi-a"])
             .current_dir(project.path())
             .output()
             .unwrap(),
@@ -132,7 +160,7 @@ fn test_ls_shows_multiple_sessions() {
     .success();
     Assert::new(
         force_cmd()
-            .args(["up", "feature-b"])
+            .args(["up", "ls-multi-b"])
             .current_dir(project.path())
             .output()
             .unwrap(),
@@ -148,8 +176,8 @@ fn test_ls_shows_multiple_sessions() {
             .unwrap(),
     )
     .success()
-    .stdout(predicate::str::contains("feature-a"))
-    .stdout(predicate::str::contains("feature-b"));
+    .stdout(predicate::str::contains("ls-multi-a"))
+    .stdout(predicate::str::contains("ls-multi-b"));
 }
 
 #[test]
