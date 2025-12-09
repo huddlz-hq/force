@@ -157,7 +157,10 @@ mod tests {
     fn test_resolve_path_relative() {
         let project_root = PathBuf::from("/home/user/project");
         let resolved = resolve_path(&project_root, "../worktrees/feature");
-        assert_eq!(resolved, PathBuf::from("/home/user/project/../worktrees/feature"));
+        assert_eq!(
+            resolved,
+            PathBuf::from("/home/user/project/../worktrees/feature")
+        );
     }
 
     #[test]

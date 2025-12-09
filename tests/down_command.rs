@@ -89,7 +89,9 @@ fn order_tracking_down_script(
     };
 
     // Use absolute path since scripts run in worktree directory
-    let abs_path = output_file.canonicalize().unwrap_or_else(|_| output_file.to_path_buf());
+    let abs_path = output_file
+        .canonicalize()
+        .unwrap_or_else(|_| output_file.to_path_buf());
 
     format!(
         r#"[meta]
@@ -156,7 +158,9 @@ fn test_down_with_alias() {
             .unwrap(),
     )
     .success()
-    .stdout(predicate::str::contains("Session 'down-alias-test' torn down."));
+    .stdout(predicate::str::contains(
+        "Session 'down-alias-test' torn down.",
+    ));
 }
 
 #[test]

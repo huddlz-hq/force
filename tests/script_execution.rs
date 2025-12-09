@@ -61,7 +61,9 @@ fn order_tracking_script(
     };
 
     // Use absolute path since scripts run in worktree directory
-    let abs_path = output_file.canonicalize().unwrap_or_else(|_| output_file.to_path_buf());
+    let abs_path = output_file
+        .canonicalize()
+        .unwrap_or_else(|_| output_file.to_path_buf());
 
     format!(
         r#"[meta]
@@ -82,7 +84,9 @@ run = "echo '{}' >> {}"
 
 fn env_capture_script(category: &str, output_file: &Path) -> String {
     // Use absolute path since scripts run in worktree directory
-    let abs_path = output_file.canonicalize().unwrap_or_else(|_| output_file.to_path_buf());
+    let abs_path = output_file
+        .canonicalize()
+        .unwrap_or_else(|_| output_file.to_path_buf());
     format!(
         r#"[meta]
 category = "{}"

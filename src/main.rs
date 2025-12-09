@@ -62,17 +62,12 @@ fn run_up(feature: &str) -> Result<(), Box<dyn std::error::Error>> {
     let force_config = config::load_config(&force_dir)?;
 
     // 3. Get project root (parent of .force/)
-    let project_root = force_dir
-        .parent()
-        .ok_or("Invalid .force/ location")?;
+    let project_root = force_dir.parent().ok_or("Invalid .force/ location")?;
 
     // 4. Create worktree
     let feature_slug = env::slugify(feature);
-    let worktree_result = worktree::create_worktree(
-        project_root,
-        &feature_slug,
-        &force_config.worktree.path,
-    )?;
+    let worktree_result =
+        worktree::create_worktree(project_root, &feature_slug, &force_config.worktree.path)?;
 
     if worktree_result.created {
         println!("Created worktree at: {}", worktree_result.path.display());
@@ -116,17 +111,12 @@ fn run_down(feature: &str) -> Result<(), Box<dyn std::error::Error>> {
     let force_config = config::load_config(&force_dir)?;
 
     // 3. Get project root (parent of .force/)
-    let project_root = force_dir
-        .parent()
-        .ok_or("Invalid .force/ location")?;
+    let project_root = force_dir.parent().ok_or("Invalid .force/ location")?;
 
     // 4. Resolve worktree path
     let feature_slug = env::slugify(feature);
-    let worktree_path = worktree::resolve_worktree_path(
-        project_root,
-        &feature_slug,
-        &force_config.worktree.path,
-    );
+    let worktree_path =
+        worktree::resolve_worktree_path(project_root, &feature_slug, &force_config.worktree.path);
 
     // 5. Generate environment
     let force_env = env::ForceEnv::new(feature, &force_dir, worktree_path.clone());
@@ -169,9 +159,7 @@ fn run_ls() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    let project_root = force_dir
-        .parent()
-        .ok_or("Invalid .force/ location")?;
+    let project_root = force_dir.parent().ok_or("Invalid .force/ location")?;
 
     println!("Active sessions:");
     for name in sessions {
