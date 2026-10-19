@@ -1,0 +1,47 @@
+name: Dependency maintenance validation
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  resolve-and-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: Resolve current stable dependencies
+        run: |
+          cargo update
+          cargo tree --locked > dependency-tree.txt
+          git diff --stat
+          echo DEPENDENCY_LOCK_START
+          base64 Cargo.lock
+          echo DEPENDENCY_LOCK_END
+      - name: Verify dependency compatibility
+        run: |
+          cargo test --locked
+          cargo fmt --check
+          cargo clippy --all-targets --locked -- -D warnings
+          cargo build --locked --release
+      - name: Audit dependencies
+        run: |
+          cargo install cargo-audit --version 0.22.2 --locked
+          cargo audit
+      - name: Save canonical lockfile
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: canonical-dependency-resolution
+          path: |
+            Cargo.lock
+            dependency-tree.txt
+          retention-days: 7
